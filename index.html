@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لعبة تحدي نافس التفاعلية - العلوم</title>
+<style>
+  :root {
+    --primary: #1e3a8a;
+    --primary-light: #3b82f6;
+    --accent: #f59e0b;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --correct: #10b981;
+    --incorrect: #ef4444;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+    direction: rtl;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    padding: 25px 20px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+  }
+
+  header h1 {
+    margin: 0 0 10px 0;
+    font-size: 2rem;
+  }
+
+  header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1rem;
+  }
+
+  .scoreboard-header {
+    display: flex;
+    justify-content: space-between;
+    background: #e2e8f0;
+    padding: 10px 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: var(--primary);
+  }
+
+  .progress-bar {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+    height: 12px;
+    width: 100%;
+    margin-bottom: 25px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    background-color: var(--accent);
+    height: 100%;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  .card {
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+  }
+
+  .level-badge {
+    display: inline-block;
+    background-color: var(--primary);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+
+  .question {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #0f172a;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-btn {
+    background-color: #f1f5f9;
+    border: 2px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 1rem;
+    text-align: right;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text);
+  }
+
+  .option-btn:hover {
+    background-color: #e2e8f0;
+    border-color: var(--primary-light);
+  }
+
+  .option-btn.correct {
+    background-color: #d1fae5;
+    border-color: var(--correct);
+    color: #065f46;
+    font-weight: bold;
+  }
+
+  .option-btn.wrong {
+    background-color: #fee2e2;
+    border-color: var(--incorrect);
+    color: #991b1b;
+  }
+
+  .feedback {
+    margin-top: 20px;
+    padding: 15px 20px;
+    border-radius: 12px;
+    display: none;
+    line-height: 1.6;
+  }
+
+  .feedback.show {
+    display: block;
+  }
+
+  .feedback.success {
+    background-color: #ecfdf5;
+    border-right: 5px solid var(--correct);
+    color: #065f46;
+  }
+
+  .feedback.error {
+    background-color: #fef2f2;
+    border-right: 5px solid var(--incorrect);
+    color: #991b1b;
+  }
+
+  .next-btn {
+    margin-top: 20px;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .next-btn:hover {
+    background-color: var(--primary-light);
+  }
+
+  /* Registration Screen */
+  .start-screen {
+    text-align: center;
+    padding: 30px;
+  }
+
+  .cert-input {
+    padding: 12px 18px;
+    font-size: 1.1rem;
+    border: 2px solid var(--primary-light);
+    border-radius: 10px;
+    text-align: center;
+    margin: 15px 0;
+    width: 85%;
+    max-width: 350px;
+  }
+
+  /* Certificate Screen */
+  .certificate {
+    display: none;
+    text-align: center;
+    background-color: #ffffff;
+    border: 10px double var(--primary);
+    padding: 40px 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    position: relative;
+  }
+
+  .certificate h2 {
+    color: var(--primary);
+    font-size: 2.2rem;
+    margin-bottom: 5px;
+  }
+
+  .certificate .badge {
+    font-size: 3.5rem;
+    margin: 10px 0;
+  }
+
+  .student-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #1e3a8a;
+    border-bottom: 2px solid var(--accent);
+    display: inline-block;
+    padding-bottom: 5px;
+    margin: 15px 0;
+  }
+
+  .score-card {
+    background-color: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 15px;
+    margin: 20px auto;
+    max-width: 400px;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .score-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .score-item .value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary);
+  }
+
+  .score-item .label {
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+
+  .teacher-signature {
+    margin-top: 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary);
+    border-top: 2px dashed #cbd5e1;
+    padding-top: 15px;
+    display: inline-block;
+    min-width: 250px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>🚀 لعبة تحدي نافس التفاعلية</h1>
+    <p>مراجعة علوم - الأسبوع الأول | طبقات الأرض والغلاف الجوي</p>
+  </header>
+
+  <!-- Start Screen -->
+  <div class="card start-screen" id="start-card">
+    <h2 style="color: var(--primary);">أهلاً بكِ في تحدي العلوم! 🌟</h2>
+    <p style="font-size: 1.1rem; color: #475569;">يرجى كتابة اسمكِ الرباعي لبدء التحدي واحتساب النقاط:</p>
+    <input type="text" id="student-name-input" class="cert-input" placeholder="اسم الطالبة الكامل">
+    <br>
+    <button class="next-btn" onclick="startGame()">ابدئي التحدي الآن 🚀</button>
+  </div>
+
+  <!-- Quiz Screen -->
+  <div class="card" id="quiz-card" style="display:none;">
+    <div class="scoreboard-header">
+      <div>الطالبة: <span id="player-display-name" style="color: #0284c7;">-</span></div>
+      <div>النقاط: <span id="score-display" style="color: #d97706;">0</span> / 100</div>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <span class="level-badge" id="level-badge">المرحلة 1 من 5</span>
+    <div class="question" id="question-text">جاري تحميل السؤال...</div>
+    <div class="options" id="options-container"></div>
+    <div class="feedback" id="feedback-box"></div>
+    <button class="next-btn" id="next-btn" style="display:none;" onclick="nextQuestion()">المرحلة التالية ➔</button>
+  </div>
+
+  <!-- Certificate Screen -->
+  <div class="certificate" id="certificate-card">
+    <h2>🏆 شهادة إنجاز وتفوق 🏆</h2>
+    <p style="font-size: 1.1rem; color: #475569;">تُمنح هذه الشهادة للطالبة المتميزة لإتمامها بنجاح اختبار:</p>
+    <h3 style="color: var(--primary-light); margin: 5px 0;">تحدي مراجعة نافس - مادة العلوم</h3>
+    <div class="badge">🎖️</div>
+    
+    <div style="font-size: 1.1rem;">يشهد قسم العلوم بأن الطالبة:</div>
+    <div class="student-title" id="cert-student-name">اسم الطالبة</div>
+    
+    <p style="font-size: 1rem; color: #334155;">قد اجتازت كافة مراحل التحدي بحصولها على التقييم التالي:</p>
+
+    <div class="score-card">
+      <div class="score-item">
+        <span class="value" id="cert-score">0</span>
+        <span class="label">إجمالي النقاط</span>
+      </div>
+      <div class="score-item">
+        <span class="value" id="cert-correct-count">0 / 5</span>
+        <span class="label">الإجابات الصحيحة</span>
+      </div>
+      <div class="score-item">
+        <span class="value" id="cert-percentage">0%</span>
+        <span class="label">النسبة المئوية</span>
+      </div>
+    </div>
+
+    <div class="teacher-signature">
+      معلمة العلوم: أ. عبير القرني
+    </div>
+    <br><br>
+
+    <button class="next-btn" onclick="window.print()">طباعة الشهادة 🖨️</button>
+  </div>
+</div>
+
+<script>
+  const questions = [
+    {
+      level: "المرحلة الأولى 🎯",
+      question: "لماذا تُسمى طبقة 'التربوسفير' بطبقة الطقس؟",
+      points: 20,
+      options: [
+        { text: "أ) لأنها أبعد طبقة عن سطح الأرض ولا يوجد بها هواء.", correct: false },
+        { text: "ب) لأنه تحدث فيها جميع تغيرات الطقس والتقلبات الجوية.", correct: true },
+        { text: "ج) لأنها تحتوي على طبقة الأوزون فقط.", correct: false },
+        { text: "د) لأن درجة الحرارة فيها ثابتة دائماً.", correct: false }
+      ],
+      correction: "الإجابة الصحيحة هي (ب). تُسمى التربوسفير بطبقة الطقس لأنها تحتوي على معظم بخار الماء والهواء وتحدث بها جميع التغيرات الجوية."
+    },
+    {
+      level: "المرحلة الثانية 🌤️",
+      question: "ما هي الطبقة التي تعلو طبقة التربوسفير مباشرة وتتميز باستقرارها وتواجد الأوزون بها؟",
+      points: 20,
+      options: [
+        { text: "أ) الغلاف الصخري", correct: false },
+        { text: "ب) طبقة الستراتوسفير", correct: true },
+        { text: "ج) اللب الخارجي", correct: false },
+        { text: "د) الميزوسفير", correct: false }
+      ],
+      correction: "الإجابة الصحيحة هي (ب). طبقة الستراتوسفير هي الطبقة الثانية وتتميز بوجود الأوزون الذي يحمي الأرض من الأشعة فوق البنفسجية."
+    },
+    {
+      level: "المرحلة الثالثة 🏔️",
+      question: "كيف يتغير الضغط الجوي كلما زاد الارتفاع عن سطح الأرض؟",
+      points: 20,
+      options: [
+        { text: "أ) يزداد الضغط الجوي كلما زاد الارتفاع.", correct: false },
+        { text: "ب) يقل الضغط الجوي كلما زاد الارتفاع.", correct: true },
+        { text: "ج) يبقى الضغط الجوي ثابتاً.", correct: false },
+        { text: "د) يتضاعف الضغط الجوي.", correct: false }
+      ],
+      correction: "الإجابة الصحيحة هي (ب). يقل الضغط الجوي كلما زاد الارتفاع بنقص وزن عمود الهواء فوقنا."
+    },
+    {
+      level: "المرحلة الرابعة 🪨",
+      question: "ماذا تُسمى الطبقة الصلبة الخارجية من الأرض (التي تشمل القشرة وأعلى الستار)؟",
+      points: 20,
+      options: [
+        { text: "أ) الغلاف المائي", correct: false },
+        { text: "ب) الغلاف الجوي", correct: false },
+        { text: "ج) الغلاف الصخري (الطبقة رقم 3)", correct: true },
+        { text: "د) اللب الداخلي", correct: false }
+      ],
+      correction: "الإجابة الصحيحة هي (ج). الغلاف الصخري هو النطاق الصلب الخارجي الذي يتكون من القشرة وأعلى الستار."
+    },
+    {
+      level: "المرحلة الخامسة 🌍",
+      question: "ما اسم الطبقة المركزية القابعة في مركز الكرة الأرضية (الطبقة رقم 5)؟",
+      points: 20,
+      options: [
+        { text: "أ) اللب", correct: true },
+        { text: "ب) الغلاف الصخري", correct: false },
+        { text: "ج) التربوسفير", correct: false },
+        { text: "د) الستار العلوي", correct: false }
+      ],
+      correction: "الإجابة الصحيحة هي (أ). اللب هو النطاق المركزي في عمق الكرة الأرضية."
+    }
+  ];
+
+  let currentQ = 0;
+  let score = 0;
+  let correctCount = 0;
+  let studentName = "";
+
+  function startGame() {
+    const input = document.getElementById('student-name-input').value.trim();
+    if (!input) {
+      alert("لطفاً أدخلي اسم الطالبة للبدء.");
+      return;
+    }
+    studentName = input;
+    document.getElementById('player-display-name').innerText = studentName;
+    document.getElementById('start-card').style.display = 'none';
+    document.getElementById('quiz-card').style.display = 'block';
+    loadQuestion();
+  }
+
+  function loadQuestion() {
+    const q = questions[currentQ];
+    document.getElementById('level-badge').innerText = q.level + ` (${currentQ + 1} / ${questions.length})`;
+    document.getElementById('question-text').innerText = q.question;
+    
+    const optionsContainer = document.getElementById('options-container');
+    optionsContainer.innerHTML = '';
+
+    const feedbackBox = document.getElementById('feedback-box');
+    feedbackBox.className = 'feedback';
+    feedbackBox.innerText = '';
+
+    document.getElementById('next-btn').style.display = 'none';
+
+    // Update Progress
+    document.getElementById('progress').style.width = ((currentQ + 1) / questions.length * 100) + '%';
+
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerText = opt.text;
+      btn.onclick = () => selectOption(btn, opt.correct, q.correction, q.points);
+      optionsContainer.appendChild(btn);
+    });
+  }
+
+  function selectOption(selectedBtn, isCorrect, correctionText, points) {
+    const allBtns = document.querySelectorAll('.option-btn');
+    allBtns.forEach(b => b.disabled = true);
+
+    const feedbackBox = document.getElementById('feedback-box');
+
+    if (isCorrect) {
+      selectedBtn.classList.add('correct');
+      score += points;
+      correctCount++;
+      document.getElementById('score-display').innerText = score;
+      feedbackBox.classList.add('success', 'show');
+      feedbackBox.innerHTML = `✨ <b>إجابة صحيحة! أحسنتِ (+${points} نقطة)</b><br>` + correctionText;
+    } else {
+      selectedBtn.classList.add('wrong');
+      feedbackBox.classList.add('error', 'show');
+      feedbackBox.innerHTML = '❌ <b>إجابة خاطئة!</b><br>' + correctionText;
+      
+      // Highlight correct answer
+      questions[currentQ].options.forEach((opt, idx) => {
+        if(opt.correct) allBtns[idx].classList.add('correct');
+      });
+    }
+
+    document.getElementById('next-btn').style.display = 'inline-block';
+  }
+
+  function nextQuestion() {
+    currentQ++;
+    if (currentQ < questions.length) {
+      loadQuestion();
+    } else {
+      showCertificate();
+    }
+  }
+
+  function showCertificate() {
+    document.getElementById('quiz-card').style.display = 'none';
+    document.getElementById('certificate-card').style.display = 'block';
+
+    document.getElementById('cert-student-name').innerText = studentName;
+    document.getElementById('cert-score').innerText = score + " / 100";
+    document.getElementById('cert-correct-count').innerText = correctCount + " / " + questions.length;
+    document.getElementById('cert-percentage').innerText = (score) + "%";
+  }
+</script>
+
+</body>
+</html>
